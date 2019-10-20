@@ -1,0 +1,42 @@
+import binascii
+import re
+import textLoader
+import cribDragger
+
+cypherTextsDecoded = []
+
+def filter(str):
+    return bool(re.search('^[a-zA-Z0-9\., \'\"\-_\:\(\)]+$', str))
+
+def outputCandidates(tuples):
+    for i in tuples:
+        if filter(i[1]) == True:
+            print(i[1])
+
+def proposeKey(key):
+    print("Possible matching key: %s"% binascii.hexlify(key.encode()))
+    decrypt(cypherTextsDecoded, key)
+
+def cribAndDrag(txt1, txt2):
+    xOredText = cribDragger.XOR(txt1, txt2)
+    crib = input('Type crib:')
+    result = cribDragger.crib(xOredText, crib)
+    outputCandidates(result)
+    proposeKey(cribDragger.XOR(txt1, crib))
+    cribAndDrag(txt1, txt2)
+
+def decrypt(cpts, key):
+    for j, cypher in enumerate(cpts):
+        print("[%d] %s" % (j, cribDragger.XOR(cypher, key)))
+
+def main():
+    global cypherTextsDecoded
+
+    sampleTxtNum = 6
+    targetTxtNum = 10
+
+    texts = textLoader.loadCiphers()
+    cypherTextsDecoded = cribDragger.decode(texts)
+    cribAndDrag(cypherTextsDecoded[sampleTxtNum], cypherTextsDecoded[targetTxtNum])
+
+main()
